@@ -18,6 +18,23 @@ const RegistrationForm: React.FC = () => {
     });
   };
 
+  useEffect(() => {
+    const fetchTasks = async () => {
+      try {
+        const authToken = localStorage.getItem("token");
+
+        if (authToken) {
+          navigate("/");
+          return;
+        }
+      } catch (error) {
+        console.error("Error fetching token:", error);
+      }
+    };
+
+    fetchTasks();
+  }, [navigate]);
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

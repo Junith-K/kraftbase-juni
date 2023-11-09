@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import EditTaskModal from "./EditTaskModal";
 import { v4 as uuidv4 } from "uuid"; // Import uuid library for generating unique IDs
+import { useNavigate } from "react-router-dom"; // Import useNavigate instead of useHistory
 
 export interface Task {
   id: string;
@@ -59,6 +60,7 @@ const KanbanBoard: React.FC = () => {
       },
     ],
   });
+  const navigate = useNavigate(); // Use useNavigate instead of useHistory
 
   const [selectedTaskDetails, setSelectedTaskDetails] = useState<{
     column: keyof Tasks;
@@ -70,6 +72,27 @@ const KanbanBoard: React.FC = () => {
     setSelectedTag(tag);
   };
 
+  useEffect(() => {
+    const fetchTasks = async () => {
+      try {
+        const authToken = localStorage.getItem("token");
+
+        if (!authToken) {
+          // If token doesn't exist, navigate back to /login
+          navigate("/login");
+          return;
+        }
+
+        // ... (rest of the code)
+
+      } catch (error) {
+        console.error("Error fetching tasks:", error);
+        // Handle error, e.g., show an error message to the user
+      }
+    };
+
+    fetchTasks();
+  }, [navigate]);
   // Add a useEffect to fetch tasks when the component mounts
   useEffect(() => {
     const fetchTasks = async () => {

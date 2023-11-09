@@ -109,6 +109,23 @@ const Projects: React.FC = () => {
     fetchProjects();
   }, []);
 
+  useEffect(() => {
+    const fetchTasks = async () => {
+      try {
+        const authToken = localStorage.getItem("token");
+
+        if (!authToken) {
+          navigate("/login");
+          return;
+        }
+      } catch (error) {
+        console.error("Error fetching tasks:", error);
+      }
+    };
+
+    fetchTasks();
+  }, [navigate]);
+
   return (
     <div className="flex flex-col items-center pt-8 bg-gradient-to-r from-blue-200 to-green-200">
       <button

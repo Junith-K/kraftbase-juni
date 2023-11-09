@@ -1,6 +1,6 @@
 // src/components/LoginForm.tsx
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const LoginForm: React.FC = () => {
@@ -16,6 +16,23 @@ const LoginForm: React.FC = () => {
       [e.target.name]: e.target.value,
     });
   };
+
+  useEffect(() => {
+    const fetchTasks = async () => {
+      try {
+        const authToken = localStorage.getItem("token");
+
+        if (authToken) {
+          navigate("/");
+          return;
+        }
+      } catch (error) {
+        console.error("Error fetching token:", error);
+      }
+    };
+
+    fetchTasks();
+  }, [navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
