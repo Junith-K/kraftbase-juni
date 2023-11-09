@@ -71,7 +71,7 @@ const EditTaskModal: React.FC<EditTaskModalProps> = ({
         className="absolute inset-0 bg-black opacity-50"
         onClick={onClose}
       ></div>
-      <div className="bg-white p-4 rounded shadow-md z-50">
+      <div className="bg-white p-4 rounded shadow-md z-50 w-96"> {/* Adjusted width to w-96 */}
         <h2 className="text-xl font-semibold mb-4 text-gray-800">Edit Task</h2>
         <label htmlFor="editedTask" className="block text-gray-800">
           Task:
@@ -80,6 +80,7 @@ const EditTaskModal: React.FC<EditTaskModalProps> = ({
           type="text"
           id="editedTask"
           value={editedTask.name}
+          maxLength={25}
           onChange={(e) =>
             setEditedTask({ ...editedTask, name: e.target.value })
           }
@@ -91,6 +92,7 @@ const EditTaskModal: React.FC<EditTaskModalProps> = ({
         <textarea
           id="description"
           value={editedTask.description}
+          maxLength={100}
           onChange={(e) =>
             setEditedTask({ ...editedTask, description: e.target.value })
           }
@@ -103,6 +105,7 @@ const EditTaskModal: React.FC<EditTaskModalProps> = ({
           type="text"
           id="tag"
           value={editedTask.tag}
+          maxLength={20}
           onChange={(e) =>
             setEditedTask({ ...editedTask, tag: e.target.value })
           }

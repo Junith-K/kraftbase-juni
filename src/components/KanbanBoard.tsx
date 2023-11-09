@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import EditTaskModal from "./EditTaskModal";
 import { v4 as uuidv4 } from "uuid"; // Import uuid library for generating unique IDs
 import { useNavigate } from "react-router-dom"; // Import useNavigate instead of useHistory
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 export interface Task {
   id: string;
@@ -22,42 +24,13 @@ const KanbanBoard: React.FC = () => {
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
   const [tasks, setTasks] = useState<Tasks>({
     todo: [
-      {
-        id: "1",
-        name: "Task 1",
-        description: "Description 1",
-        dueDate: "2023-12-31",
-        tag: "Personal", // Example tag
-        priority: false, // Example priority
-      },
-      {
-        id: "2",
-        name: "Task 2",
-        description: "Description 2",
-        dueDate: "2023-11-30",
-        tag: "Work", // Example tag
-        priority: true, // Example priority
-      },
+      
     ],
     inProgress: [
-      {
-        id: "3",
-        name: "Task 3",
-        description: "Description 3",
-        dueDate: "2023-11-15",
-        tag: "Personal", // Example tag
-        priority: false, // Example priority
-      },
+      
     ],
     done: [
-      {
-        id: "4",
-        name: "Task 4",
-        description: "Description 4",
-        dueDate: "2023-11-01",
-        tag: "Work", // Example tag
-        priority: true, // Example priority
-      },
+      
     ],
   });
   const navigate = useNavigate(); // Use useNavigate instead of useHistory
@@ -78,16 +51,12 @@ const KanbanBoard: React.FC = () => {
         const authToken = localStorage.getItem("token");
 
         if (!authToken) {
-          // If token doesn't exist, navigate back to /login
           navigate("/login");
           return;
         }
-
-        // ... (rest of the code)
-
       } catch (error) {
-        console.error("Error fetching tasks:", error);
-        // Handle error, e.g., show an error message to the user
+        console.error("Error fetching token:", error);
+        toast.error("Error fetching token");
       }
     };
 
@@ -101,6 +70,7 @@ const KanbanBoard: React.FC = () => {
         const authToken = localStorage.getItem("token"); // Replace with the actual key used to store the token
   
         if (!authToken) {
+          toast.error("Authentication token not found");
           throw new Error("Authentication token not found");
         }
   
@@ -114,6 +84,7 @@ const KanbanBoard: React.FC = () => {
         });
   
         if (!response.ok) {
+          toast.error("Failed to fetch tasks");
           throw new Error("Failed to fetch tasks");
         }
   
@@ -131,15 +102,18 @@ const KanbanBoard: React.FC = () => {
             if (Array.isArray(data.tasks[key])) {
               sortedTasks[key as keyof Tasks] = data.tasks[key].sort((a:Task, b:Task) => (b.priority ? 1 : -1));
             } else {
+              toast.error(`Invalid data format: tasks.${key} is not an array`);
               console.error(`Invalid data format: tasks.${key} is not an array`);
             }
           }
   
           setTasks(sortedTasks);
         } else {
+          toast.error("Error fetching tasks");
           console.error("Invalid data format: tasks is not an object");
         }
       } catch (error) {
+        toast.error("Error fetching tasks");
         console.error("Error fetching tasks:", error);
         // Handle error, e.g., show an error message to the user
       }
@@ -184,6 +158,7 @@ const KanbanBoard: React.FC = () => {
         const authToken = localStorage.getItem("token"); // Replace with the actual key used to store the token
 
         if (!authToken) {
+          toast.error("Authentication token not found");
           throw new Error("Authentication token not found");
         }
 
@@ -201,7 +176,7 @@ const KanbanBoard: React.FC = () => {
         });
 
         if (!response.ok) {
-          console.log(response);
+          toast.error("Failed to save task");
           throw new Error("Failed to save task");
         }
 
@@ -229,8 +204,11 @@ const KanbanBoard: React.FC = () => {
         });
 
         setSelectedTaskDetails(null);
+        toast.success("Task saved successfully");
       } catch (error) {
         console.error("Error saving task:", error);
+        toast.error("Error saving task");
+
         // Handle error, e.g., show an error message to the user
       }
     }
@@ -255,6 +233,7 @@ const KanbanBoard: React.FC = () => {
         const authToken = localStorage.getItem("token"); // Replace with the actual key used to store the token
   
         if (!authToken) {
+          toast.error("Authentication token not found");
           throw new Error("Authentication token not found");
         }
   
@@ -272,6 +251,7 @@ const KanbanBoard: React.FC = () => {
         });
   
         if (!response.ok) {
+          toast.error("Error deleting task");
           throw new Error("Failed to delete task");
         }
   
@@ -283,8 +263,12 @@ const KanbanBoard: React.FC = () => {
           };
           return updatedTasks;
         });
+        toast.success("Task deleted successfully");
+
       } catch (error) {
         console.error("Error deleting task:", error);
+        toast.error("Error deleting task");
+
         // Handle error, e.g., show an error message to the user
       }
     }
@@ -326,54 +310,59 @@ const KanbanBoard: React.FC = () => {
                 ? "In Progress"
                 : "Done"}
             </h2>
-            {tasks[column as keyof Tasks].map((task, index) => (
-              // Check if the task has the selected tag or show all tasks if no tag is selected
-              (selectedTag === null || task.tag === selectedTag) && (
-                <div
-                  key={index}
-                  className={`mb-4 p-4 rounded cursor-pointer ${getTaskColor(
-                    column
-                  )}`}
-                  style={{ width: "300px" }}
-                >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <strong>{task.name}</strong>
-                      <p>{task.description}</p>
-                      <div className={`rounded-md p-1 w-fit ${task.priority ? 'bg-gradient-to-r from-red-500 to-yellow-500' : 'bg-gradient-to-r from-blue-500 to-green-500'}`}>
-                        <p className="text-sm text-white">Tag: {task.tag}</p>
-                        <p className="text-sm text-white">Priority: {task.priority ? 'High' : 'Low'}</p>
-                      </div>
-                    </div>
-                    <div className="ml-4">
-                      <p>Due Date: {task.dueDate}</p>
-                      <div className="flex space-x-2">
-                        <button
-                          className="bg-blue-500 text-white p-2 rounded hover:bg-blue-600"
-                          onClick={() =>
-                            handleEditTask(column as keyof Tasks, index)
-                          }
-                        >
-                          Edit
-                        </button>
-                        <button
-                          className="bg-red-500 text-white p-2 rounded hover:bg-red-600"
-                          onClick={() =>
-                            handleDeleteTask(
-                              column as keyof Tasks,
-                              task.id,
-                              index
-                            )
-                          }
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )
-            ))}
+            {tasks[column as keyof Tasks].length === 0 ? (
+  <div className="mb-4 p-4 rounded cursor-pointer bg-gray-200">
+    <p className="text-gray-600">No tasks available.</p>
+  </div>
+) : (
+  tasks[column as keyof Tasks].map((task, index) => (
+    (selectedTag === null || task.tag === selectedTag) && (
+      <div
+        key={index}
+        className={`mb-4 p-4 rounded cursor-pointer ${getTaskColor(
+          column
+        )}`}
+        style={{ width: "300px" }}
+      >
+        <div className="flex items-center justify-between">
+          <div className="overflow-hidden">
+            <strong className="break-words">{task.name}</strong>
+            <p className="break-words">{task.description}</p>
+            <div className={`rounded-md p-1 w-fit mt-1 ${task.priority ? 'bg-gradient-to-r from-red-500 to-yellow-500' : 'bg-gradient-to-r from-blue-500 to-green-500'}`}>
+              <p className="text-sm text-white whitespace-pre-line">Tag: {task.tag}</p>
+              <p className="text-sm text-white whitespace-pre-line">Priority: {task.priority ? 'High' : 'Low'}</p>
+            </div>
+          </div>
+          <div className="ml-4">
+            <p className="whitespace-pre-line">Due Date: {task.dueDate}</p>
+            <div className="flex space-x-2">
+              <button
+                className="bg-blue-500 text-white p-2 rounded hover:bg-blue-600"
+                onClick={() =>
+                  handleEditTask(column as keyof Tasks, index)
+                }
+              >
+                Edit
+              </button>
+              <button
+                className="bg-red-500 text-white p-2 rounded hover:bg-red-600"
+                onClick={() =>
+                  handleDeleteTask(
+                    column as keyof Tasks,
+                    task.id,
+                    index
+                  )
+                }
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  ))
+)}
           </div>
         ))}
       </div>
@@ -389,6 +378,7 @@ const KanbanBoard: React.FC = () => {
         onSave={handleSaveTask}
         taskDetails={selectedTaskDetails}
       />
+      <ToastContainer />
     </div>
   );
 };

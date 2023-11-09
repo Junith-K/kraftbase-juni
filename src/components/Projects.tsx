@@ -3,6 +3,8 @@ import React, { useState, useEffect } from 'react';
 import Modal from 'react-modal';
 import { v4 as uuidv4 } from 'uuid';
 import { useNavigate } from 'react-router-dom';
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 interface Task {
     id: string;
@@ -54,6 +56,8 @@ const Projects: React.FC = () => {
         });
   
         if (!response.ok) {
+            toast.error("Failed to create project");
+
           throw new Error('Failed to create project');
         }
   
@@ -69,20 +73,23 @@ const Projects: React.FC = () => {
             tasks: [],
           },
         ]);
-  
+        
         closeModal();
+        toast.success("Project created successfully");
       }
     } catch (error) {
+        toast.error("Failed to create project");
       console.error('Error creating project:', error);
       // Handle error, e.g., show an error message to the user
     }
   };
   
 
-  const handleProjectClick = (projectId: string) => {
-    // Navigate to the custom project page
-    navigate(`/projects/${projectId}`);
+  const handleProjectClick = (projectId: string, projectName: string) => {
+    // Navigate to the custom project page with additional data
+    navigate(`/projects/${projectId}`, { state: { projectName } });
   };
+  
 
   useEffect(() => {
     // Fetch the project names and ids from the API
@@ -96,12 +103,14 @@ const Projects: React.FC = () => {
         });
 
         if (!response.ok) {
+            toast.error("Failed to fetch project");
           throw new Error('Failed to fetch projects');
         }
 
         const data = await response.json();
         setProjects(data.projectsNames);
       } catch (error) {
+        toast.error("Failed to fetch project");
         console.error('Error fetching projects:', error);
       }
     };
@@ -119,7 +128,8 @@ const Projects: React.FC = () => {
           return;
         }
       } catch (error) {
-        console.error("Error fetching tasks:", error);
+        toast.error("Failed to fetch token");
+        console.error("Error fetching token:", error);
       }
     };
 
@@ -127,15 +137,13 @@ const Projects: React.FC = () => {
   }, [navigate]);
 
   return (
-    <div className="flex flex-col items-center pt-8 bg-gradient-to-r from-blue-200 to-green-200">
+    <div className="flex flex-col items-center h-screen pt-8 bg-gradient-to-r from-blue-200 to-green-200">
       <button
         onClick={openModal}
         className="bg-blue-500 text-white p-2 rounded hover:bg-blue-600"
       >
         Create New Project
       </button>
-
-      {/* Modal */}
       <Modal
         isOpen={isModalOpen}
         onRequestClose={closeModal}
@@ -164,12 +172,13 @@ const Projects: React.FC = () => {
           <div
             key={project.id}
             className="max-w-md mx-auto bg-blue-200 p-4 rounded-md shadow-md cursor-pointer"
-            onClick={() => handleProjectClick(project.id)}
+            onClick={() => handleProjectClick(project.id,project.name)}
           >
             <h2 className="text-xl font-semibold">{project.name}</h2>
           </div>
         ))}
       </div>
+      <ToastContainer />
     </div>
   );
 };

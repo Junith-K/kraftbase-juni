@@ -1,8 +1,10 @@
 // CustomProject.tsx
-import { useParams } from 'react-router-dom';
+import { useParams, useLocation } from "react-router-dom";
 import React, { useEffect, useState } from "react";
 import EditTaskModal from "./EditTaskModal";
 import { v4 as uuidv4 } from "uuid"; // Import uuid library for generating unique IDs
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 export interface Task {
   id: string;
@@ -21,13 +23,14 @@ export interface Tasks {
 const CustomProject: React.FC = () => {
   const { projectId } = useParams();
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
+  const location = useLocation();
+  const [projectName, setProjectName] = useState<string | null>(
+    (location.state as any)?.projectName || null
+  );
   const [tasks, setTasks] = useState<Tasks>({
-    todo: [
-    ],
-    inProgress: [
-    ],
-    done: [ 
-    ],
+    todo: [],
+    inProgress: [],
+    done: [],
   });
 
   const [selectedTaskDetails, setSelectedTaskDetails] = useState<{
@@ -46,24 +49,30 @@ const CustomProject: React.FC = () => {
       try {
         // Retrieve the authentication token from localStorage
         const authToken = localStorage.getItem("token"); // Replace with the actual key used to store the token
-  
+
         if (!authToken) {
+          toast.error("Authentication token not found");
           throw new Error("Authentication token not found");
         }
-  
+
         // Make API call to fetch all tasks
-        const response = await fetch(`http://localhost:3001/api/projects/${projectId}/allTasks`, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${authToken}`,
-          },
-        });
-  
+        const response = await fetch(
+          `http://localhost:3001/api/projects/${projectId}/allTasks`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${authToken}`,
+            },
+          }
+        );
+
         if (!response.ok) {
+          toast.error("Failed to fetch tasks");
+
           throw new Error("Failed to fetch tasks");
         }
-  
+
         // Parse and set the tasks in the local state
         const data = await response.json();
         if (typeof data.tasks === "object") {
@@ -72,32 +81,39 @@ const CustomProject: React.FC = () => {
             inProgress: [],
             done: [],
           };
-  
+
           for (const key in data.tasks) {
             if (Array.isArray(data.tasks[key])) {
-                // Assuming tasks have a 'priority' property
-                sortedTasks[key as keyof Tasks] = data.tasks[key].sort((a: Task, b: Task) => (b.priority ? 1 : -1));
-              } else {
-                console.error(`Invalid data format: tasks.${key} is not an array`);
-              }
+              // Assuming tasks have a 'priority' property
+              sortedTasks[key as keyof Tasks] = data.tasks[key].sort(
+                (a: Task, b: Task) => (b.priority ? 1 : -1)
+              );
+            } else {
+              toast.error(`Invalid data format: tasks.${key} is not an array`);
+              console.error(
+                `Invalid data format: tasks.${key} is not an array`
+              );
+            }
           }
-  
+
           setTasks(sortedTasks);
         } else {
+          toast.error("Invalid data format: tasks is not an object");
+
           console.error("Invalid data format: tasks is not an object");
         }
       } catch (error) {
+        toast.error("Error fetching tasks");
+
         console.error("Error fetching tasks:", error);
         // Handle error, e.g., show an error message to the user
       }
     };
-  
+
     fetchTasks();
   }, []);
-  
-  
-  
-   // Run this effect only once when the component mounts
+
+  // Run this effect only once when the component mounts
 
   const handleAddTask = (column: keyof Tasks) => {
     const newTask: Task = {
@@ -131,51 +147,58 @@ const CustomProject: React.FC = () => {
         const authToken = localStorage.getItem("token"); // Replace with the actual key used to store the token
 
         if (!authToken) {
+          toast.error("Authentication token not found");
+
           throw new Error("Authentication token not found");
         }
         // Make API call to update or add the task
-        const response = await fetch(`http://localhost:3001/api/projects/${projectId}/addTask`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${authToken}`,
-          },
-          body: JSON.stringify({
-            column: updatedColumn,
-            task: editedTask,
-          }),
-        });
+        const response = await fetch(
+          `http://localhost:3001/api/projects/${projectId}/addTask`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${authToken}`,
+            },
+            body: JSON.stringify({
+              column: updatedColumn,
+              task: editedTask,
+            }),
+          }
+        );
 
         if (!response.ok) {
-          console.log(response);
+          toast.error("Failed to save task");
           throw new Error("Failed to save task");
         }
-        console.log(response)
+        console.log(response);
         // Update the local state only if the API call is successful
         setTasks((prevTasks) => {
           const updatedTasks = { ...prevTasks };
-  
+
           // Remove from the current column
           updatedTasks[column] = updatedTasks[column].filter(
             (task, i) => i !== index
           );
-  
+
           // Add to the new column
           updatedTasks[updatedColumn] = [
             editedTask,
             ...updatedTasks[updatedColumn],
           ];
-  
+
           // Sort the tasks based on priority (high priority first)
           updatedTasks[updatedColumn] = updatedTasks[updatedColumn].sort(
             (a, b) => (b.priority ? 1 : -1)
           );
-  
+
           return updatedTasks;
         });
 
         setSelectedTaskDetails(null);
+        toast.success("Task saved successfully");
       } catch (error) {
+        toast.error("Failed to save task");
         console.error("Error saving task:", error);
         // Handle error, e.g., show an error message to the user
       }
@@ -194,33 +217,38 @@ const CustomProject: React.FC = () => {
     const confirmDelete = window.confirm(
       "Are you sure you want to delete this task?"
     );
-  
+
     if (confirmDelete) {
       try {
         // Retrieve the authentication token from localStorage
         const authToken = localStorage.getItem("token"); // Replace with the actual key used to store the token
-  
+
         if (!authToken) {
+          toast.error("Authentication token not found");
           throw new Error("Authentication token not found");
         }
-  
+
         // Make API call to delete the task
-        const response = await fetch(`http://localhost:3001/api/projects/${projectId}/deleteTask`, {
-          method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${authToken}`,
-          },
-          body: JSON.stringify({
-            column,
-            taskId,
-          }),
-        });
-  
+        const response = await fetch(
+          `http://localhost:3001/api/projects/${projectId}/deleteTask`,
+          {
+            method: "DELETE",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${authToken}`,
+            },
+            body: JSON.stringify({
+              column,
+              taskId,
+            }),
+          }
+        );
+
         if (!response.ok) {
+          toast.error("Error deleting task");
           throw new Error("Failed to delete task");
         }
-  
+
         // Update the local state only if the API call is successful
         setTasks((prevTasks) => {
           const updatedTasks = {
@@ -229,29 +257,45 @@ const CustomProject: React.FC = () => {
           };
           return updatedTasks;
         });
+        toast.success("Task deleted successfully");
       } catch (error) {
+        toast.error("Error deleting task");
         console.error("Error deleting task:", error);
         // Handle error, e.g., show an error message to the user
       }
     }
   };
-  
 
   return (
-    <div className="flex justify-center items-center h-screen bg-gradient-to-r from-blue-200 to-green-200">
+    <div className="flex flex-col justify-evenly h-screen items-center bg-gradient-to-r from-blue-200 to-green-200">
+      <h1 className="text-3xl w-fit p-3 rounded-md font-bold text-white bg-gradient-to-r from-purple-500 to-pink-500 cursor-pointer">
+        {projectName || "Project Name"}
+      </h1>
       <div className="flex">
         <div className="flex flex-col items-center bg-blue-300 rounded-md p-4 mr-4 h-min">
-          <h2 className="text-xl font-semibold mb-4 text-white underline">Tags</h2>
+          <h2 className="text-xl font-semibold mb-4 text-white underline">
+            Tags
+          </h2>
           <button
-            className={`p-2 rounded cursor-pointer ${selectedTag === null && "bg-blue-500 text-white"} border-blue-100 border-2 hover:bg-blue-600 mb-2`}
+            className={`p-2 rounded cursor-pointer ${
+              selectedTag === null && "bg-blue-500 text-white"
+            } border-blue-100 border-2 hover:bg-blue-600 mb-2`}
             onClick={() => handleFilterByTag(null)}
           >
             All
           </button>
-          {Array.from(new Set(tasks.todo.concat(tasks.inProgress, tasks.done).map(task => task.tag))).map(tag => (
+          {Array.from(
+            new Set(
+              tasks.todo
+                .concat(tasks.inProgress, tasks.done)
+                .map((task) => task.tag)
+            )
+          ).map((tag) => (
             <button
               key={tag}
-              className={`p-2 rounded cursor-pointer ${selectedTag === tag && "bg-blue-500 text-white"} border-blue-100 border-2 hover:bg-blue-600 mb-2`}
+              className={`p-2 rounded cursor-pointer ${
+                selectedTag === tag && "bg-blue-500 text-white"
+              } border-blue-100 border-2 hover:bg-blue-600 mb-2`}
               onClick={() => handleFilterByTag(tag)}
             >
               {tag}
@@ -272,54 +316,72 @@ const CustomProject: React.FC = () => {
                 ? "In Progress"
                 : "Done"}
             </h2>
-            {tasks[column as keyof Tasks].map((task, index) => (
-              // Check if the task has the selected tag or show all tasks if no tag is selected
-              (selectedTag === null || task.tag === selectedTag) && (
-                <div
-                  key={index}
-                  className={`mb-4 p-4 rounded cursor-pointer ${getTaskColor(
-                    column
-                  )}`}
-                  style={{ width: "300px" }}
-                >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <strong>{task.name}</strong>
-                      <p>{task.description}</p>
-                      <div className={`rounded-md p-1 w-fit ${task.priority ? 'bg-gradient-to-r from-red-500 to-yellow-500' : 'bg-gradient-to-r from-blue-500 to-green-500'}`}>
-                        <p className="text-sm text-white">Tag: {task.tag}</p>
-                        <p className="text-sm text-white">Priority: {task.priority ? 'High' : 'Low'}</p>
+            {tasks[column as keyof Tasks].length === 0 ? (
+              <div className="mb-4 p-4 rounded cursor-pointer bg-gray-200">
+                <p className="text-gray-600">No tasks available.</p>
+              </div>
+            ) : (
+              tasks[column as keyof Tasks].map(
+                (task, index) =>
+                  (selectedTag === null || task.tag === selectedTag) && (
+                    <div
+                      key={index}
+                      className={`mb-4 p-4 rounded cursor-pointer ${getTaskColor(
+                        column
+                      )}`}
+                      style={{ width: "300px" }}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="overflow-hidden">
+                          <strong className="break-words">{task.name}</strong>
+                          <p className="break-words">{task.description}</p>
+                          <div
+                            className={`rounded-md p-1 w-fit mt-1 ${
+                              task.priority
+                                ? "bg-gradient-to-r from-red-500 to-yellow-500"
+                                : "bg-gradient-to-r from-blue-500 to-green-500"
+                            }`}
+                          >
+                            <p className="text-sm text-white whitespace-pre-line">
+                              Tag: {task.tag}
+                            </p>
+                            <p className="text-sm text-white whitespace-pre-line">
+                              Priority: {task.priority ? "High" : "Low"}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="ml-4">
+                          <p className="whitespace-pre-line">
+                            Due Date: {task.dueDate}
+                          </p>
+                          <div className="flex space-x-2">
+                            <button
+                              className="bg-blue-500 text-white p-2 rounded hover:bg-blue-600"
+                              onClick={() =>
+                                handleEditTask(column as keyof Tasks, index)
+                              }
+                            >
+                              Edit
+                            </button>
+                            <button
+                              className="bg-red-500 text-white p-2 rounded hover:bg-red-600"
+                              onClick={() =>
+                                handleDeleteTask(
+                                  column as keyof Tasks,
+                                  task.id,
+                                  index
+                                )
+                              }
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        </div>
                       </div>
                     </div>
-                    <div className="ml-4">
-                      <p>Due Date: {task.dueDate}</p>
-                      <div className="flex space-x-2">
-                        <button
-                          className="bg-blue-500 text-white p-2 rounded hover:bg-blue-600"
-                          onClick={() =>
-                            handleEditTask(column as keyof Tasks, index)
-                          }
-                        >
-                          Edit
-                        </button>
-                        <button
-                          className="bg-red-500 text-white p-2 rounded hover:bg-red-600"
-                          onClick={() =>
-                            handleDeleteTask(
-                              column as keyof Tasks,
-                              task.id,
-                              index
-                            )
-                          }
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                  )
               )
-            ))}
+            )}
           </div>
         ))}
       </div>
@@ -335,6 +397,7 @@ const CustomProject: React.FC = () => {
         onSave={handleSaveTask}
         taskDetails={selectedTaskDetails}
       />
+      <ToastContainer />
     </div>
   );
 };
