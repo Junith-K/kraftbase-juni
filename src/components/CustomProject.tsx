@@ -316,71 +316,76 @@ const CustomProject: React.FC = () => {
                 ? "In Progress"
                 : "Done"}
             </h2>
-            {tasks[column as keyof Tasks].length === 0 ? (
+            {tasks[column as keyof Tasks].filter(
+              (task) => selectedTag === null || task.tag === selectedTag
+            ).length === 0 ? (
               <div className="mb-4 p-4 rounded cursor-pointer bg-gray-200">
-                <p className="text-gray-600">No tasks available.</p>
+                <p className="text-gray-600">
+                  No tasks available for this tag.
+                </p>
               </div>
             ) : (
-              tasks[column as keyof Tasks].map(
-                (task, index) =>
-                  (selectedTag === null || task.tag === selectedTag) && (
-                    <div
-                      key={index}
-                      className={`mb-4 p-4 rounded cursor-pointer ${getTaskColor(
-                        column
-                      )}`}
-                      style={{ width: "300px" }}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="overflow-hidden">
-                          <strong className="break-words">{task.name}</strong>
-                          <p className="break-words">{task.description}</p>
-                          <div
-                            className={`rounded-md p-1 w-fit mt-1 ${
-                              task.priority
-                                ? "bg-gradient-to-r from-red-500 to-yellow-500"
-                                : "bg-gradient-to-r from-blue-500 to-green-500"
-                            }`}
-                          >
-                            <p className="text-sm text-white whitespace-pre-line">
-                              Tag: {task.tag}
-                            </p>
-                            <p className="text-sm text-white whitespace-pre-line">
-                              Priority: {task.priority ? "High" : "Low"}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="ml-4">
-                          <p className="whitespace-pre-line">
-                            Due Date: {task.dueDate}
+              tasks[column as keyof Tasks]
+                .filter(
+                  (task) => selectedTag === null || task.tag === selectedTag
+                )
+                .map((task, index) => (
+                  <div
+                    key={index}
+                    className={`mb-4 p-4 rounded cursor-pointer ${getTaskColor(
+                      column
+                    )}`}
+                    style={{ width: "300px" }}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="overflow-hidden">
+                        <strong className="break-words">{task.name}</strong>
+                        <p className="break-words">{task.description}</p>
+                        <div
+                          className={`rounded-md p-1 w-fit mt-1 ${
+                            task.priority
+                              ? "bg-gradient-to-r from-red-500 to-yellow-500"
+                              : "bg-gradient-to-r from-blue-500 to-green-500"
+                          }`}
+                        >
+                          <p className="text-sm text-white whitespace-pre-line">
+                            Tag: {task.tag}
                           </p>
-                          <div className="flex space-x-2">
-                            <button
-                              className="bg-blue-500 text-white p-2 rounded hover:bg-blue-600"
-                              onClick={() =>
-                                handleEditTask(column as keyof Tasks, index)
-                              }
-                            >
-                              Edit
-                            </button>
-                            <button
-                              className="bg-red-500 text-white p-2 rounded hover:bg-red-600"
-                              onClick={() =>
-                                handleDeleteTask(
-                                  column as keyof Tasks,
-                                  task.id,
-                                  index
-                                )
-                              }
-                            >
-                              Delete
-                            </button>
-                          </div>
+                          <p className="text-sm text-white whitespace-pre-line">
+                            Priority: {task.priority ? "High" : "Low"}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="ml-4">
+                        <p className="whitespace-pre-line">
+                          Due Date: {task.dueDate}
+                        </p>
+                        <div className="flex space-x-2">
+                          <button
+                            className="bg-blue-500 text-white p-2 rounded hover:bg-blue-600"
+                            onClick={() =>
+                              handleEditTask(column as keyof Tasks, index)
+                            }
+                          >
+                            Edit
+                          </button>
+                          <button
+                            className="bg-red-500 text-white p-2 rounded hover:bg-red-600"
+                            onClick={() =>
+                              handleDeleteTask(
+                                column as keyof Tasks,
+                                task.id,
+                                index
+                              )
+                            }
+                          >
+                            Delete
+                          </button>
                         </div>
                       </div>
                     </div>
-                  )
-              )
+                  </div>
+                ))
             )}
           </div>
         ))}

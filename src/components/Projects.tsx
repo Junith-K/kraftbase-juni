@@ -42,47 +42,46 @@ const Projects: React.FC = () => {
   const handleProjectSubmit = async () => {
     try {
       if (projectName.trim() !== '') {
-        const response = await fetch('http://localhost:3001/api/createProject', {
+        const projectId = uuidv4(); // Generate the id only once
+  
+        const response = await fetch('http://localhost:3001/api/projects/createProject', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${localStorage.getItem('token')}`,
           },
           body: JSON.stringify({
-            id: uuidv4(),
+            id: projectId,
             name: projectName,
             tasks: [], // Add an empty tasks array
           }),
         });
   
         if (!response.ok) {
-            toast.error("Failed to create project");
-
+          toast.error("Failed to create project");
           throw new Error('Failed to create project');
         }
   
-        // Parse the response if needed
-        const data = await response.json();
-        console.log(data)
         // Update the local state only if the API call is successful
         setProjects((prevProjects) => [
           ...prevProjects,
           {
-            id: uuidv4(),
+            id: projectId, // Use the same id
             name: projectName,
             tasks: [],
           },
         ]);
-        
+  
         closeModal();
         toast.success("Project created successfully");
       }
     } catch (error) {
-        toast.error("Failed to create project");
+      toast.error("Failed to create project");
       console.error('Error creating project:', error);
       // Handle error, e.g., show an error message to the user
     }
   };
+  
   
 
   const handleProjectClick = (projectId: string, projectName: string) => {
