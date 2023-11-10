@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const LoginForm: React.FC = () => {
   const navigate = useNavigate();
@@ -27,6 +29,7 @@ const LoginForm: React.FC = () => {
           return;
         }
       } catch (error) {
+        toast.error("Error fetching token");
         console.error("Error fetching token:", error);
       }
     };
@@ -39,7 +42,7 @@ const LoginForm: React.FC = () => {
   
     try {
       // Send a POST request to your backend API for user login
-      const response = await fetch('http://localhost:3001/api/login', {
+      const response = await fetch('https://kraftbase-backend-juni.onrender.com/api/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -58,14 +61,15 @@ const LoginForm: React.FC = () => {
         // Redirect to a protected route or the home page
         navigate('/');
       } else {
-        // Login failed
         const errorResult = await response.json();
+        toast.error('Login error:'+ errorResult.error);
         console.error('Login error:', errorResult.error);
   
         // Handle the error message as needed (e.g., display it to the user)
       }
     } catch (error) {
-      console.error('Error during login:', error);
+        toast.error('Error during login');
+        console.error('Error during login:', error);
       // Handle other errors (e.g., network issues)
     }
   };
@@ -113,6 +117,7 @@ const LoginForm: React.FC = () => {
           Login
         </button>
       </form>
+      <ToastContainer />
     </div>
   );
 };

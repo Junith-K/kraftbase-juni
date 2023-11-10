@@ -57,7 +57,7 @@ const CustomProject: React.FC = () => {
 
         // Make API call to fetch all tasks
         const response = await fetch(
-          `http://localhost:3001/api/projects/${projectId}/allTasks`,
+          `https://kraftbase-backend-juni.onrender.com/api/projects/${projectId}/allTasks`,
           {
             method: "GET",
             headers: {
@@ -153,7 +153,7 @@ const CustomProject: React.FC = () => {
         }
         // Make API call to update or add the task
         const response = await fetch(
-          `http://localhost:3001/api/projects/${projectId}/addTask`,
+          `https://kraftbase-backend-juni.onrender.com/api/projects/${projectId}/addTask`,
           {
             method: "POST",
             headers: {
@@ -230,7 +230,7 @@ const CustomProject: React.FC = () => {
 
         // Make API call to delete the task
         const response = await fetch(
-          `http://localhost:3001/api/projects/${projectId}/deleteTask`,
+          `https://kraftbase-backend-juni.onrender.com/api/projects/${projectId}/deleteTask`,
           {
             method: "DELETE",
             headers: {

@@ -44,7 +44,7 @@ const Projects: React.FC = () => {
       if (projectName.trim() !== '') {
         const projectId = uuidv4(); // Generate the id only once
   
-        const response = await fetch('http://localhost:3001/api/projects/createProject', {
+        const response = await fetch('https://kraftbase-backend-juni.onrender.com/api/projects/createProject', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -94,7 +94,7 @@ const Projects: React.FC = () => {
     // Fetch the project names and ids from the API
     const fetchProjects = async () => {
       try {
-        const response = await fetch('http://localhost:3001/api/projects/names', {
+        const response = await fetch('https://kraftbase-backend-juni.onrender.com/api/projects/names', {
           method: 'GET',
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`,

@@ -1,14 +1,16 @@
 // src/components/RegistrationForm.tsx
 
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const RegistrationForm: React.FC = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    username: '',
-    email: '',
-    password: '',
+    username: "",
+    email: "",
+    password: "",
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -28,6 +30,7 @@ const RegistrationForm: React.FC = () => {
           return;
         }
       } catch (error) {
+        toast.error("Error fetching token");
         console.error("Error fetching token:", error);
       }
     };
@@ -35,51 +38,53 @@ const RegistrationForm: React.FC = () => {
     fetchTasks();
   }, [navigate]);
 
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-  
+
     try {
       // Send a POST request to your backend API for user registration
-      const response = await fetch('http://localhost:3001/api/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
-  
+      const response = await fetch(
+        "https://kraftbase-backend-juni.onrender.com/api/register",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(formData),
+        }
+      );
+
       if (response.ok) {
         // Registration successful
         const result = await response.json();
-  
+
         // Check if the response includes a token
         if (result.token) {
           console.log(result.token); // Log the JWT token
-  
+
           // Save the token to localStorage (or secure storage) for authentication
-          localStorage.setItem('token', result.token);
-  
+          localStorage.setItem("token", result.token);
+
           // Redirect to a protected route or the home page
-          navigate('/');
+          navigate("/");
         } else {
           console.log(result.message); // Log the success message without a token
           // Redirect to a protected route or the home page
-          navigate('/');
+          navigate("/");
         }
       } else {
         // Registration failed
         const errorResult = await response.json();
-        console.error('Registration error:', errorResult.error);
-  
-        // Handle the error message as needed (e.g., display it to the user)
+        toast.error("Registration error:"+ errorResult.error);
+        console.error("Registration error:", errorResult.error);
+
       }
     } catch (error) {
-      console.error('Error during registration:', error);
+      toast.error("Error during registration");
+      console.error("Error during registration:", error);
       // Handle other errors (e.g., network issues)
     }
   };
-  
 
   return (
     <div className="flex items-center justify-center h-screen bg-gradient-to-r from-blue-200 to-green-200">
@@ -87,9 +92,7 @@ const RegistrationForm: React.FC = () => {
         onSubmit={handleSubmit}
         className="bg-white p-8 rounded shadow-md max-w-xl w-full bg-opacity-90"
       >
-        <h2 className="text-2xl font-semibold mb-4 text-gray-800">
-          Register
-        </h2>
+        <h2 className="text-2xl font-semibold mb-4 text-gray-800">Register</h2>
         <div className="mb-4">
           <label htmlFor="username" className="block text-gray-800">
             Username
@@ -139,6 +142,7 @@ const RegistrationForm: React.FC = () => {
           Register
         </button>
       </form>
+      <ToastContainer />
     </div>
   );
 };

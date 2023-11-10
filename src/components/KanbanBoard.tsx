@@ -70,7 +70,7 @@ const KanbanBoard: React.FC = () => {
 
         // Make API call to fetch all tasks
         const response = await fetch(
-          "http://localhost:3001/api/tasks/allTasks",
+          "https://kraftbase-backend-juni.onrender.com/api/tasks/allTasks",
           {
             method: "GET",
             headers: {
@@ -163,7 +163,7 @@ const KanbanBoard: React.FC = () => {
 
         // Make API call to update or add the task
         const response = await fetch(
-          "http://localhost:3001/api/tasks/addTask",
+          "https://kraftbase-backend-juni.onrender.com/api/tasks/addTask",
           {
             method: "POST",
             headers: {
@@ -241,7 +241,7 @@ const KanbanBoard: React.FC = () => {
 
         // Make API call to delete the task
         const response = await fetch(
-          "http://localhost:3001/api/tasks/deleteTask",
+          "https://kraftbase-backend-juni.onrender.com/api/tasks/deleteTask",
           {
             method: "DELETE",
             headers: {
