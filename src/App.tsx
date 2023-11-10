@@ -54,7 +54,7 @@ const NavBar: React.FC = () => {
 
 const App: React.FC = () => {
   return (
-    <Router basename='https://kraftbase-juni.onrender.com'>
+    <Router basename={process.env.PUBLIC_URL}>
       <NavBar />
       <Routes>
         <Route path="/register" element={<RegistrationForm />} />
